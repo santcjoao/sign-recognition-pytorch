@@ -1,0 +1,27 @@
+[tool.ruff]
+# Tamanho máximo de linha padrão do Ruff (compatível com Black)
+line-length = 88
+
+# Regras recomendadas de Linter
+[tool.ruff.lint]
+select = [
+    "E",   # Erros do pycodestyle
+    "W",   # Avisos do pycodestyle
+    "F",   # Pyflakes (erros gerais de lógica/importações)
+    "I",   # Isort (ordenação correta de imports)
+    "B",   # Bugbear (padrões propensos a bugs)
+]
+ignore = []
+
+[tool.mypy]
+# Diretório padrão para type checking
+files = "."
+
+# Ignora warnings de pacotes de terceiros sem tipagem (como torch, torchvision, tqdm)
+ignore_missing_imports = true
+
+# Habilita checagens estritas básicas sem quebrar as dependências externas
+check_untyped_defs = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true

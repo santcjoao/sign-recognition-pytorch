@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Ambientes Virtuais
+.env
+.venv
+env/
+venv/
+
+# Específicos do Projeto
+data/
+
+# Ruff / Mypy
+.ruff_cache/
+.mypy_cache/
+
+# Resultados de Experimentos / Pesos
+results/
+runs/
+*.pth
+*.pt
+*.csv
+
+# SO / IDEs
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
