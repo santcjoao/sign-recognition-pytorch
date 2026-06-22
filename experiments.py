@@ -17,18 +17,22 @@ BASELINE = ModelConfig(
     batch_normalization=False,
 )
 
+BASELINE_BN = ModelConfig(
+    name="baseline_bn", 
+    data_augmentation=False, 
+    batch_normalization=True
+)
+
+BASELINE_AUG = ModelConfig(
+    name="baseline_aug", 
+    data_augmentation=True, 
+    batch_normalization=False
+)
+
 BASELINE_BN_AUG = ModelConfig(
     name="baseline_bn_aug",
     data_augmentation=True,
     batch_normalization=True,
-)
-
-BASELINE_BN = ModelConfig(
-    name="baseline_bn", data_augmentation=False, batch_normalization=True
-)
-
-BASELINE_AUG = ModelConfig(
-    name="baseline_aug", data_augmentation=True, batch_normalization=False
 )
 
 # ==============================================================================
@@ -62,20 +66,40 @@ BASELINE_SGD = create_plan(BASELINE, WITH_SGD)
 BASELINE_SGDM = create_plan(BASELINE, WITH_SGDM)
 
 # Planos Individuais do Baseline com Batch/Augmentation
-BASELINE_BATCH_ADAM = create_plan(BASELINE_BN_AUG, WITH_ADAM)
-BASELINE_BATCH_SGD = create_plan(BASELINE_BN_AUG, WITH_SGD)
-BASELINE_BATCH_SGDM = create_plan(BASELINE_BN_AUG, WITH_SGDM)
+BASELINE_BN_ADAM = create_plan(BASELINE_BN, WITH_ADAM)
+BASELINE_BN_SGD = create_plan(BASELINE_BN, WITH_SGD)
+BASELINE_BN_SGDM = create_plan(BASELINE_BN, WITH_SGDM)
+
+BASELINE_AUG_ADAM = create_plan(BASELINE_AUG, WITH_ADAM)
+BASELINE_AUG_SGD = create_plan(BASELINE_AUG, WITH_SGD)
+BASELINE_AUG_SGDM = create_plan(BASELINE_AUG, WITH_SGDM)
+
+BASELINE_BN_AUG_ADAM = create_plan(BASELINE_BN_AUG, WITH_ADAM)
+BASELINE_BN_AUG_SGD = create_plan(BASELINE_BN_AUG, WITH_SGD)
+BASELINE_BN_AUG_SGDM = create_plan(BASELINE_BN_AUG, WITH_SGDM)
 
 # ==============================================================================
 # 4. DEFINIÇÃO DAS SUÍTES DE EXECUÇÃO
 # ==============================================================================
 BASELINE_SUITE = ExperimentSuite([BASELINE_ADAM, BASELINE_SGD, BASELINE_SGDM])
-BASELINE_BATCH_SUITE = ExperimentSuite(
-    [BASELINE_BATCH_ADAM, BASELINE_BATCH_SGD, BASELINE_BATCH_SGDM]
+
+BASELINE_BN_SUITE = ExperimentSuite(
+    [BASELINE_BN_ADAM, BASELINE_BN_SGD, BASELINE_BN_SGDM]
 )
+
+BASELINE_AUG_SUITE = ExperimentSuite(
+    [BASELINE_AUG_ADAM, BASELINE_AUG_SGD, BASELINE_AUG_SGDM]
+)
+
+BASELINE_BN_AUG_SUITE = ExperimentSuite(
+    [BASELINE_BN_AUG_ADAM, BASELINE_BN_AUG_SGD, BASELINE_BN_AUG_SGDM]
+)
+
 ALL = ExperimentSuite(
-    BASELINE_SUITE.experiment_plans + BASELINE_BATCH_SUITE.experiment_plans
+    BASELINE_SUITE.experiment_plans + BASELINE_BN_SUITE.experiment_plans
+    + BASELINE_AUG_SUITE.experiment_plans + BASELINE_BN_AUG_SUITE.experiment_plans
 )
+
 FAST = ExperimentSuite([BASELINE_ADAM])
 
 # ==============================================================================
@@ -99,7 +123,6 @@ IDENTITY_TRANSFORM = T.Compose([])
 # ==============================================================================
 if __name__ == "__main__":
     from torchvision.datasets import GTSRB
-    import data_analyst
 
     print("Verifying/Downloading GTSRB dataset...")
     GTSRB(root="./data", split="train", download=True)
@@ -115,4 +138,3 @@ if __name__ == "__main__":
     pipeline = Pipeline(suite=CHOOSEN_SUITE, transform=CHOOSEN_TRANSFORM)
     pipeline.run()
 
-    data_analyst.main()
