@@ -95,7 +95,8 @@ if __name__ == "__main__":
     GTSRB(root="./data", split="test", download=True)
     print("Dataset verified successfully!\n")
 
-    CHOOSEN_SUITE = FAST
+    # TODO: fazer experimentos todos juntos e depois treinar o melhor modelo individualmente?
+    CHOOSEN_SUITE = ALL
     CHOOSEN_TRANSFORM = IDENTITY_TRANSFORM
 
     pipeline = Pipeline(suite=CHOOSEN_SUITE, transform=CHOOSEN_TRANSFORM)
