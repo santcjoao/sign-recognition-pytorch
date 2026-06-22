@@ -137,4 +137,3 @@ if __name__ == "__main__":
 
     pipeline = Pipeline(suite=CHOOSEN_SUITE, transform=CHOOSEN_TRANSFORM)
     pipeline.run()
-

@@ -70,18 +70,28 @@ def compute_metrics_and_plots(
     # Confusion matrix
     cm = confusion_matrix(y_true, y_pred)
 
-    # Calculate per-class accuracy and macro accuracy
+    # Cálculo de acurácia por classe e contagem de amostras
     class_accuracies = []
+    class_counts = []
     for i in range(43):
         total_samples = cm[i].sum()
+        class_counts.append(total_samples)
         acc = cm[i, i] / total_samples if total_samples > 0 else 0.0
         class_accuracies.append(acc)
-
     macro_acc = np.mean(class_accuracies)
 
     # Map class index to name to identify the hardest classes
     class_perf = {GTSRB_CLASSES[i]: class_accuracies[i] for i in range(43)}
     hardest_classes = sorted(class_perf.items(), key=lambda x: x[1])[:5]
+
+    # NOVOS DADOS PARA O RELATÓRIO: Encontrar os maiores erros de confusão (Onde i != j)
+    confusions = []
+    for i in range(43):
+        for j in range(43):
+            if i != j and cm[i, j] > 0:
+                confusions.append((GTSRB_CLASSES[i], GTSRB_CLASSES[j], cm[i, j]))
+    # Ordena pelos pares mais confundidos
+    top_confusions = sorted(confusions, key=lambda x: x[2], reverse=True)[:5]
 
     # Plot confusion matrix
     plt.figure(figsize=(22, 18))
@@ -104,7 +114,10 @@ def compute_metrics_and_plots(
         "global_acc": global_acc,
         "macro_acc": macro_acc,
         "hardest_classes": hardest_classes,
-        "raw_preds": y_pred,
+        "top_confusions": top_confusions,
+        "class_counts": class_counts,
+        "class_accuracies": class_accuracies,
+        "raw_preds": y_pred
     }
 
 
