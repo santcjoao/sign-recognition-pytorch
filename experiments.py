@@ -120,6 +120,7 @@ IDENTITY_TRANSFORM = T.Compose([])
 # ==============================================================================
 if __name__ == "__main__":
     from torchvision.datasets import GTSRB
+    import data_analyst
 
     print("Verifying/Downloading GTSRB dataset...")
     GTSRB(root="./data", split="train", download=True)
@@ -132,3 +133,5 @@ if __name__ == "__main__":
 
     pipeline = Pipeline(suite=CHOOSEN_SUITE, transform=CHOOSEN_TRANSFORM)
     pipeline.run()
+
+    data_analyst.main()
