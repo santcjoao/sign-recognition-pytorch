@@ -17,10 +17,22 @@ BASELINE = ModelConfig(
     batch_normalization=False,
 )
 
-BASELINE_BATCH = ModelConfig(
-    name="baseline_batch",
+BASELINE_BN_AUG = ModelConfig(
+    name="baseline_bn_aug",
     data_augmentation=True,
     batch_normalization=True,
+)
+
+BASELINE_BN = ModelConfig(
+    name="baseline_bn", 
+    data_augmentation=False, 
+    batch_normalization=True
+)
+
+BASELINE_AUG = ModelConfig(
+    name="baseline_aug", 
+    data_augmentation=True,  
+    batch_normalization=False
 )
 
 # ==============================================================================
@@ -47,16 +59,15 @@ def create_plan(model: ModelConfig, hp: Hyperparameters) -> ExperimentPlan:
         hyperparameters=hp,
     )
 
-
 # Planos Individuais do Baseline
 BASELINE_ADAM = create_plan(BASELINE, WITH_ADAM)
 BASELINE_SGD = create_plan(BASELINE, WITH_SGD)
 BASELINE_SGDM = create_plan(BASELINE, WITH_SGDM)
 
 # Planos Individuais do Baseline com Batch/Augmentation
-BASELINE_BATCH_ADAM = create_plan(BASELINE_BATCH, WITH_ADAM)
-BASELINE_BATCH_SGD = create_plan(BASELINE_BATCH, WITH_SGD)
-BASELINE_BATCH_SGDM = create_plan(BASELINE_BATCH, WITH_SGDM)
+BASELINE_BATCH_ADAM = create_plan(BASELINE_BN_AUG, WITH_ADAM)
+BASELINE_BATCH_SGD = create_plan(BASELINE_BN_AUG, WITH_SGD)
+BASELINE_BATCH_SGDM = create_plan(BASELINE_BN_AUG, WITH_SGDM)
 
 # ==============================================================================
 # 4. DEFINIÇÃO DAS SUÍTES DE EXECUÇÃO
@@ -78,7 +89,7 @@ EXAMPLE_TRANSFORM = T.Compose(
         T.RandomRotation(15),
         T.RandomAffine(degrees=15, translate=(0.1, 0.1), scale=(0.9, 1.1)),
         T.RandomCrop(28, padding=2),
-        T.RandomHorizontalFlip(p=0.5),
+        T.RandomHorizontalFlip(p=0.5), # pode não ser bom considerando placas que indiquem direção
         T.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1),
     ]
 )
