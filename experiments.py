@@ -17,12 +17,6 @@ BASELINE = ModelConfig(
     batch_normalization=False,
 )
 
-BASELINE_BN_AUG = ModelConfig(
-    name="baseline_bn_aug",
-    data_augmentation=True,
-    batch_normalization=True,
-)
-
 BASELINE_BN = ModelConfig(
     name="baseline_bn", 
     data_augmentation=False, 
@@ -35,17 +29,23 @@ BASELINE_AUG = ModelConfig(
     batch_normalization=False
 )
 
+BASELINE_BN_AUG = ModelConfig(
+    name="baseline_bn_aug",
+    data_augmentation=True,
+    batch_normalization=True,
+)
+
 # ==============================================================================
 # 2. HIPERPARAMETRIZAÇÕES
 # ==============================================================================
 WITH_ADAM = Hyperparameters(
-    epochs=25, batch_size=64, optimizer_name="adam", learning_rate=0.001
+    epochs=5, batch_size=64, optimizer_name="adam", learning_rate=0.001
 )
 WITH_SGD = Hyperparameters(
-    epochs=25, batch_size=64, optimizer_name="sgd", learning_rate=0.01
+    epochs=5, batch_size=64, optimizer_name="sgd", learning_rate=0.01
 )
 WITH_SGDM = Hyperparameters(
-    epochs=25, batch_size=64, optimizer_name="sgdm", learning_rate=0.01, momentum=0.9
+    epochs=5, batch_size=64, optimizer_name="sgdm", learning_rate=0.01, momentum=0.9
 )
 
 
@@ -65,26 +65,46 @@ BASELINE_SGD = create_plan(BASELINE, WITH_SGD)
 BASELINE_SGDM = create_plan(BASELINE, WITH_SGDM)
 
 # Planos Individuais do Baseline com Batch/Augmentation
-BASELINE_BATCH_ADAM = create_plan(BASELINE_BN_AUG, WITH_ADAM)
-BASELINE_BATCH_SGD = create_plan(BASELINE_BN_AUG, WITH_SGD)
-BASELINE_BATCH_SGDM = create_plan(BASELINE_BN_AUG, WITH_SGDM)
+BASELINE_BN_ADAM = create_plan(BASELINE_BN, WITH_ADAM)
+BASELINE_BN_SGD = create_plan(BASELINE_BN, WITH_SGD)
+BASELINE_BN_SGDM = create_plan(BASELINE_BN, WITH_SGDM)
+
+BASELINE_AUG_ADAM = create_plan(BASELINE_AUG, WITH_ADAM)
+BASELINE_AUG_SGD = create_plan(BASELINE_AUG, WITH_SGD)
+BASELINE_AUG_SGDM = create_plan(BASELINE_AUG, WITH_SGDM)
+
+BASELINE_BN_AUG_ADAM = create_plan(BASELINE_BN_AUG, WITH_ADAM)
+BASELINE_BN_AUG_SGD = create_plan(BASELINE_BN_AUG, WITH_SGD)
+BASELINE_BN_AUG_SGDM = create_plan(BASELINE_BN_AUG, WITH_SGDM)
 
 # ==============================================================================
 # 4. DEFINIÇÃO DAS SUÍTES DE EXECUÇÃO
 # ==============================================================================
 BASELINE_SUITE = ExperimentSuite([BASELINE_ADAM, BASELINE_SGD, BASELINE_SGDM])
+
 BASELINE_BATCH_SUITE = ExperimentSuite(
-    [BASELINE_BATCH_ADAM, BASELINE_BATCH_SGD, BASELINE_BATCH_SGDM]
+    [BASELINE_BN_ADAM, BASELINE_BN_SGD, BASELINE_BN_SGDM]
 )
+
+BASELINE_AUG_SUITE = ExperimentSuite(
+    [BASELINE_AUG_ADAM, BASELINE_AUG_SGD, BASELINE_AUG_SGDM]
+)
+
+BASELINE_BN_AUG_SUITE = ExperimentSuite(
+    [BASELINE_BN_AUG_ADAM, BASELINE_BN_AUG_SGD, BASELINE_BN_AUG_SGDM]
+)
+
 ALL = ExperimentSuite(
     BASELINE_SUITE.experiment_plans + BASELINE_BATCH_SUITE.experiment_plans
+    + BASELINE_AUG_SUITE.experiment_plans + BASELINE_BN_AUG_SUITE.experiment_plans
 )
+
 FAST = ExperimentSuite([BASELINE_ADAM])
 
 # ==============================================================================
 # 5. AUGMENTATIONS CUSTOMIZADAS
 # ==============================================================================
-EXAMPLE_TRANSFORM = T.Compose(
+CUSTOM_TRANSFORM = T.Compose(
     [
         T.RandomRotation(15),
         T.RandomAffine(degrees=15, translate=(0.1, 0.1), scale=(0.9, 1.1)),
