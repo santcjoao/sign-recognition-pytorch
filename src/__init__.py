@@ -9,10 +9,11 @@ from src.core import (
     TestPredictions,
     TransformCallable,
 )
-from src.pipe import Pipeline
+from src.pipe import BASE_TRANSFORM, Pipeline
 from src.utils.gtsrb import (
     _MEAN,
     _STD,
+    GTSRB_CLASSES,
     get_dataloaders,
     save_predictions,
 )
@@ -28,8 +29,10 @@ __all__ = [
     "ExperimentResult",
     "TransformCallable",
     "LoadersTuple",
+    "BASE_TRANSFORM",
     "get_dataloaders",
     "save_predictions",
     "_MEAN",
     "_STD",
+    "GTSRB_CLASSES",
 ]

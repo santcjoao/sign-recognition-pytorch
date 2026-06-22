@@ -17,35 +17,31 @@ BASELINE = ModelConfig(
     batch_normalization=False,
 )
 
-BASELINE_BN = ModelConfig(
-    name="baseline_bn", 
-    data_augmentation=False, 
-    batch_normalization=True
-)
-
-BASELINE_AUG = ModelConfig(
-    name="baseline_aug", 
-    data_augmentation=True,  
-    batch_normalization=False
-)
-
 BASELINE_BN_AUG = ModelConfig(
     name="baseline_bn_aug",
     data_augmentation=True,
     batch_normalization=True,
 )
 
+BASELINE_BN = ModelConfig(
+    name="baseline_bn", data_augmentation=False, batch_normalization=True
+)
+
+BASELINE_AUG = ModelConfig(
+    name="baseline_aug", data_augmentation=True, batch_normalization=False
+)
+
 # ==============================================================================
 # 2. HIPERPARAMETRIZAÇÕES
 # ==============================================================================
 WITH_ADAM = Hyperparameters(
-    epochs=5, batch_size=64, optimizer_name="adam", learning_rate=0.001
+    epochs=25, batch_size=64, optimizer_name="adam", learning_rate=0.001
 )
 WITH_SGD = Hyperparameters(
-    epochs=5, batch_size=64, optimizer_name="sgd", learning_rate=0.01
+    epochs=25, batch_size=64, optimizer_name="sgd", learning_rate=0.01
 )
 WITH_SGDM = Hyperparameters(
-    epochs=5, batch_size=64, optimizer_name="sgdm", learning_rate=0.01, momentum=0.9
+    epochs=25, batch_size=64, optimizer_name="sgdm", learning_rate=0.01, momentum=0.9
 )
 
 
@@ -59,57 +55,40 @@ def create_plan(model: ModelConfig, hp: Hyperparameters) -> ExperimentPlan:
         hyperparameters=hp,
     )
 
+
 # Planos Individuais do Baseline
 BASELINE_ADAM = create_plan(BASELINE, WITH_ADAM)
 BASELINE_SGD = create_plan(BASELINE, WITH_SGD)
 BASELINE_SGDM = create_plan(BASELINE, WITH_SGDM)
 
 # Planos Individuais do Baseline com Batch/Augmentation
-BASELINE_BN_ADAM = create_plan(BASELINE_BN, WITH_ADAM)
-BASELINE_BN_SGD = create_plan(BASELINE_BN, WITH_SGD)
-BASELINE_BN_SGDM = create_plan(BASELINE_BN, WITH_SGDM)
-
-BASELINE_AUG_ADAM = create_plan(BASELINE_AUG, WITH_ADAM)
-BASELINE_AUG_SGD = create_plan(BASELINE_AUG, WITH_SGD)
-BASELINE_AUG_SGDM = create_plan(BASELINE_AUG, WITH_SGDM)
-
-BASELINE_BN_AUG_ADAM = create_plan(BASELINE_BN_AUG, WITH_ADAM)
-BASELINE_BN_AUG_SGD = create_plan(BASELINE_BN_AUG, WITH_SGD)
-BASELINE_BN_AUG_SGDM = create_plan(BASELINE_BN_AUG, WITH_SGDM)
+BASELINE_BATCH_ADAM = create_plan(BASELINE_BN_AUG, WITH_ADAM)
+BASELINE_BATCH_SGD = create_plan(BASELINE_BN_AUG, WITH_SGD)
+BASELINE_BATCH_SGDM = create_plan(BASELINE_BN_AUG, WITH_SGDM)
 
 # ==============================================================================
 # 4. DEFINIÇÃO DAS SUÍTES DE EXECUÇÃO
 # ==============================================================================
 BASELINE_SUITE = ExperimentSuite([BASELINE_ADAM, BASELINE_SGD, BASELINE_SGDM])
-
 BASELINE_BATCH_SUITE = ExperimentSuite(
-    [BASELINE_BN_ADAM, BASELINE_BN_SGD, BASELINE_BN_SGDM]
+    [BASELINE_BATCH_ADAM, BASELINE_BATCH_SGD, BASELINE_BATCH_SGDM]
 )
-
-BASELINE_AUG_SUITE = ExperimentSuite(
-    [BASELINE_AUG_ADAM, BASELINE_AUG_SGD, BASELINE_AUG_SGDM]
-)
-
-BASELINE_BN_AUG_SUITE = ExperimentSuite(
-    [BASELINE_BN_AUG_ADAM, BASELINE_BN_AUG_SGD, BASELINE_BN_AUG_SGDM]
-)
-
 ALL = ExperimentSuite(
     BASELINE_SUITE.experiment_plans + BASELINE_BATCH_SUITE.experiment_plans
-    + BASELINE_AUG_SUITE.experiment_plans + BASELINE_BN_AUG_SUITE.experiment_plans
 )
-
 FAST = ExperimentSuite([BASELINE_ADAM])
 
 # ==============================================================================
 # 5. AUGMENTATIONS CUSTOMIZADAS
 # ==============================================================================
-CUSTOM_TRANSFORM = T.Compose(
+EXAMPLE_TRANSFORM = T.Compose(
     [
         T.RandomRotation(15),
         T.RandomAffine(degrees=15, translate=(0.1, 0.1), scale=(0.9, 1.1)),
         T.RandomCrop(28, padding=2),
-        T.RandomHorizontalFlip(p=0.5), # pode não ser bom considerando placas que indiquem direção
+        T.RandomHorizontalFlip(
+            p=0.5
+        ),  # pode não ser bom considerando placas que indiquem direção
         T.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1),
     ]
 )
@@ -126,8 +105,10 @@ if __name__ == "__main__":
     GTSRB(root="./data", split="test", download=True)
     print("Dataset verified successfully!\n")
 
-    # TODO: fazer experimentos todos juntos e depois treinar o melhor modelo individualmente?
-    CHOOSEN_SUITE = ALL
+    # TODO
+    # Faze experimento todos juntos e depois treinar o
+    # melhor modelo individualmente?
+    CHOOSEN_SUITE = BASELINE_SUITE
     CHOOSEN_TRANSFORM = IDENTITY_TRANSFORM
 
     pipeline = Pipeline(suite=CHOOSEN_SUITE, transform=CHOOSEN_TRANSFORM)
