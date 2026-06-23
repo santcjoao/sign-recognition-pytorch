@@ -68,7 +68,7 @@ def compute_metrics_and_plots(
     global_acc = accuracy_score(y_true, y_pred)
 
     # Confusion matrix
-    cm = confusion_matrix(y_true, y_pred)
+    cm = confusion_matrix(y_true, y_pred, labels=list(range(43)))
 
     # Cálculo de acurácia por classe e contagem de amostras
     class_accuracies = []
