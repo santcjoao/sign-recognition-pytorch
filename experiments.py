@@ -142,17 +142,17 @@ ADAM_SCHEDULED = Hyperparameters(
     ),
 )
 
-# Deep model: Cosine Annealing + AdamW + Max Accuracy techniques
-ADAMW_COSINE = Hyperparameters(
-    epochs=100,
+# Deep model: Cosine Annealing + Adam + Max Accuracy techniques
+ADAM_COSINE = Hyperparameters(
+    epochs=15,
     batch_size=64,
-    optimizer_name="adamw",
+    optimizer_name="adam",
     learning_rate=0.001,
     weight_decay=1e-4,
     label_smoothing=0.1,
     scheduler=SchedulerConfig(
         name="cosine_annealing",
-        kwargs={"T_max": 100, "eta_min": 1e-6},
+        kwargs={"T_max": 15, "eta_min": 1e-6},
     ),
 )
 
@@ -177,7 +177,7 @@ ALL = COMBINE_SUITES(
 )
 
 FAST = MAKE_SUITE(BASELINE, [ADAM])
-ADAMW_CUSTOM_DEEP = MAKE_SUITE(CUSTOM_DEEP, [ADAMW_COSINE])
+ADAM_CUSTOM_DEEP = MAKE_SUITE(CUSTOM_DEEP, [ADAM_COSINE])
 
 
 # ==============================================================================
@@ -195,7 +195,7 @@ if __name__ == "__main__":
     print("Dataset verified successfully!\n")
 
     # Select experiment suite and transforms for execution
-    CHOOSEN_SUITE = ADAMW_CUSTOM_DEEP
+    CHOOSEN_SUITE = ADAM_CUSTOM_DEEP
     CHOOSEN_TRANSFORM = CUSTOM_TRANSFORM
 
     pipeline = Pipeline(suite=CHOOSEN_SUITE, transform=CHOOSEN_TRANSFORM)
