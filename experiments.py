@@ -61,10 +61,13 @@ BASELINE_TRANSFORM = T.Compose(
 
 CUSTOM_TRANSFORM = T.Compose(
     [
+        T.RandomAutocontrast(p=0.5),
         T.RandomEqualize(p=0.5),
-        T.RandomAffine(degrees=5, translate=(0.2, 0.2), scale=(0.8, 1.2)),
-        T.RandomApply([T.GaussianBlur(kernel_size=3, sigma=(0.1, 1.0))], p=0.3),
-        T.ColorJitter(brightness=0.1, contrast=0.2, saturation=0.2, hue=0.05),
+        T.RandomAdjustSharpness(sharpness_factor=2, p=0.3),
+        T.RandomPerspective(distortion_scale=0.2, p=0.2),
+        T.RandomAffine(degrees=10, translate=(0.1, 0.1), scale=(0.9, 1.1)),
+        T.RandomApply([T.GaussianBlur(kernel_size=3, sigma=(0.1, 1.0))], p=0.2),
+        T.ColorJitter(brightness=0.15, contrast=0.15, saturation=0.15, hue=0.05),
     ]
 )
 
@@ -98,7 +101,7 @@ BASELINE_BN_AUG = ModelConfig(
 
 CUSTOM_MODEL = ModelConfig(
     name="custom_deep",
-    dropout=0.5,
+    dropout=0.3,
     data_augmentation=True,
     batch_normalization=True,
     image_size=48,
@@ -121,14 +124,14 @@ SGDM = Hyperparameters(
 )
 
 ADAM_CUSTOM = Hyperparameters(
-    epochs=20,
+    epochs=25,
     batch_size=64,
     optimizer_name="adam",
     learning_rate=0.001,
-    label_smoothing=0.1,
+    label_smoothing=0.0,
     scheduler=SchedulerConfig(
         name="cosine_annealing",
-        kwargs={"T_max": 20, "eta_min": 1e-6},
+        kwargs={"T_max": 25, "eta_min": 1e-6},
     ),
 )
 
