@@ -18,6 +18,10 @@ class ModelConfig:
     data_augmentation: bool = False
     batch_normalization: bool = False
 
+# Custom model
+@dataclass
+class CustomModelConfig(ModelConfig):
+    pass
 
 # Hyperparameters
 @dataclass

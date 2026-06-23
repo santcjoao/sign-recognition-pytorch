@@ -5,6 +5,7 @@ from src import (
     ExperimentSuite,
     Hyperparameters,
     ModelConfig,
+    CustomModelConfig,
     Pipeline,
 )
 
@@ -35,6 +36,13 @@ BASELINE_BN_AUG = ModelConfig(
     batch_normalization=True,
 )
 
+CUSTOM = CustomModelConfig(
+    name="custom_model",
+    dropout= .379,
+    data_augmentation=True,
+    batch_normalization=True
+)
+
 # ==============================================================================
 # 2. HIPERPARAMETRIZAÇÕES
 # ==============================================================================
@@ -47,7 +55,6 @@ WITH_SGD = Hyperparameters(
 WITH_SGDM = Hyperparameters(
     epochs=25, batch_size=64, optimizer_name="sgdm", learning_rate=0.01, momentum=0.9
 )
-
 
 # ==============================================================================
 # 3. HELPER & DECLARAÇÃO DOS EXPERIMENTOS
@@ -77,6 +84,11 @@ BASELINE_BN_AUG_ADAM = create_plan(BASELINE_BN_AUG, WITH_ADAM)
 BASELINE_BN_AUG_SGD = create_plan(BASELINE_BN_AUG, WITH_SGD)
 BASELINE_BN_AUG_SGDM = create_plan(BASELINE_BN_AUG, WITH_SGDM)
 
+# Plano com a arquitetura do grupo
+CUSTOM_ADAM = create_plan(CUSTOM, WITH_ADAM)
+CUSTOM_SGD = create_plan(CUSTOM, WITH_SGD)
+CUSTOM_SGDM = create_plan(CUSTOM, WITH_SGDM)
+
 # ==============================================================================
 # 4. DEFINIÇÃO DAS SUÍTES DE EXECUÇÃO
 # ==============================================================================
@@ -94,9 +106,14 @@ BASELINE_BN_AUG_SUITE = ExperimentSuite(
     [BASELINE_BN_AUG_ADAM, BASELINE_BN_AUG_SGD, BASELINE_BN_AUG_SGDM]
 )
 
+CUSTOM_SUITE = ExperimentSuite(
+    [CUSTOM_ADAM, CUSTOM_SGD, CUSTOM_SGDM]
+)
+
 ALL = ExperimentSuite(
     BASELINE_SUITE.experiment_plans + BASELINE_BN_SUITE.experiment_plans
     + BASELINE_AUG_SUITE.experiment_plans + BASELINE_BN_AUG_SUITE.experiment_plans
+    + CUSTOM_SUITE.experiment_plans
 )
 
 FAST = ExperimentSuite([BASELINE_ADAM])
@@ -127,9 +144,6 @@ if __name__ == "__main__":
     GTSRB(root="./data", split="test", download=True)
     print("Dataset verified successfully!\n")
 
-    # TODO
-    # Faze experimento todos juntos e depois treinar o
-    # melhor modelo individualmente?
     CHOOSEN_SUITE = ALL
     CHOOSEN_TRANSFORM = CUSTOM_TRANSFORM
 
