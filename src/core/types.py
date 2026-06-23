@@ -36,6 +36,8 @@ class Hyperparameters:
     optimizer_name: str
     learning_rate: float
     momentum: float = 0.0
+    weight_decay: float = 0.0
+    label_smoothing: float = 0.0
     scheduler: Optional[SchedulerConfig] = None
 
 

@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 from src import History, Hyperparameters
 
-OPTIMIZERS = {"adam", "sgd", "sgdm"}
+OPTIMIZERS = {"adam", "adamw", "sgd", "sgdm"}
 
 SCHEDULERS = {
     "reduce_on_plateau": ReduceLROnPlateau,
@@ -27,7 +27,7 @@ class Trainer:
         self.model = model.to(device)
         self.hyper = hyper
         self.device = device
-        self.criterion = nn.CrossEntropyLoss()
+        self.criterion = nn.CrossEntropyLoss(label_smoothing=self.hyper.label_smoothing)
         self.optimizer = self._build_optimizer()
         self.scheduler: Optional[Any] = self._build_scheduler()
 
@@ -41,15 +41,28 @@ class Trainer:
 
         if opt_name == "adam":
             return torch.optim.Adam(
-                self.model.parameters(), lr=self.hyper.learning_rate
+                self.model.parameters(),
+                lr=self.hyper.learning_rate,
+                weight_decay=self.hyper.weight_decay,
+            )
+        elif opt_name == "adamw":
+            return torch.optim.AdamW(
+                self.model.parameters(),
+                lr=self.hyper.learning_rate,
+                weight_decay=self.hyper.weight_decay,
             )
         elif opt_name == "sgd":
-            return torch.optim.SGD(self.model.parameters(), lr=self.hyper.learning_rate)
+            return torch.optim.SGD(
+                self.model.parameters(),
+                lr=self.hyper.learning_rate,
+                weight_decay=self.hyper.weight_decay,
+            )
         else:
             return torch.optim.SGD(
                 self.model.parameters(),
                 lr=self.hyper.learning_rate,
                 momentum=self.hyper.momentum,
+                weight_decay=self.hyper.weight_decay,
             )
 
     def _build_scheduler(self) -> Optional[Any]:
@@ -148,7 +161,7 @@ class Trainer:
                 else:
                     self.scheduler.step()
                 current_lr = self.optimizer.param_groups[0]["lr"]
-                print(f"  Scheduler step → LR: {current_lr:.2e}")
+                print(f"  Scheduler step -> LR: {current_lr:.2e}")
 
             # Save best model
             if epoch_val_acc > best_val_acc:

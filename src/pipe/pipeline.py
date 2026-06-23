@@ -26,6 +26,7 @@ def get_transform(image_size: int, transform: T.Compose | None = None) -> T.Comp
             T.Resize((image_size, image_size)),
             transform,
             T.ToTensor(),
+            T.RandomErasing(p=0.2, scale=(0.02, 0.1)),
             T.Normalize(mean=_MEAN, std=_STD),
         ]
     )
