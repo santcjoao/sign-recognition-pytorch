@@ -104,15 +104,12 @@ FAST = ExperimentSuite([BASELINE_ADAM])
 # ==============================================================================
 # 5. AUGMENTATIONS CUSTOMIZADAS
 # ==============================================================================
-EXAMPLE_TRANSFORM = T.Compose(
+CUSTOM_TRANSFORM = T.Compose(
     [
         T.RandomRotation(15),
         T.RandomAffine(degrees=15, translate=(0.1, 0.1), scale=(0.9, 1.1)),
         T.RandomCrop(28, padding=2),
-        T.RandomHorizontalFlip(
-            p=0.5
-        ),  # pode não ser bom considerando placas que indiquem direção
-        T.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1),
+        T.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1)
     ]
 )
 IDENTITY_TRANSFORM = T.Compose([])
@@ -131,8 +128,8 @@ if __name__ == "__main__":
     # TODO
     # Faze experimento todos juntos e depois treinar o
     # melhor modelo individualmente?
-    CHOOSEN_SUITE = BASELINE_SUITE
-    CHOOSEN_TRANSFORM = IDENTITY_TRANSFORM
+    CHOOSEN_SUITE = ALL
+    CHOOSEN_TRANSFORM = CUSTOM_TRANSFORM
 
     pipeline = Pipeline(suite=CHOOSEN_SUITE, transform=CHOOSEN_TRANSFORM)
     pipeline.run()
