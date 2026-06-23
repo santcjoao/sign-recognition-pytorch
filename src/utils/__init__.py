@@ -1,3 +1,4 @@
+from .args import parse_experiment_args
 from .gtsrb import (
     _MEAN,
     _STD,
@@ -12,4 +13,5 @@ __all__ = [
     "_MEAN",
     "_STD",
     "GTSRB_CLASSES",
+    "parse_experiment_args",
 ]

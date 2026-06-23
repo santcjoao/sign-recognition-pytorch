@@ -50,15 +50,23 @@ def COMBINE_SUITES(*suites: ExperimentSuite) -> ExperimentSuite:
 # ==============================================================================
 # 2. DATA AUGMENTATIONS
 # ==============================================================================
-CUSTOM_TRANSFORM = T.Compose(
+BASELINE_TRANSFORM = T.Compose(
     [
-        T.RandomEqualize(p=0.5),
-        T.RandomAffine(degrees=5, translate=(0.1, 0.1), scale=(0.9, 1.1)),
+        T.RandomRotation(15),
+        T.RandomAffine(degrees=0.1, translate=(0.1, 0.1), scale=(0.9, 1.1)),
         T.RandomApply([T.GaussianBlur(kernel_size=3, sigma=(0.1, 1.0))], p=0.3),
         T.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1),
     ]
 )
-IDENTITY_TRANSFORM = T.Compose([])
+
+CUSTOM_TRANSFORM = T.Compose(
+    [
+        T.RandomEqualize(p=0.5),
+        T.RandomAffine(degrees=5, translate=(0.2, 0.2), scale=(0.8, 1.2)),
+        T.RandomApply([T.GaussianBlur(kernel_size=3, sigma=(0.1, 1.0))], p=0.3),
+        T.ColorJitter(brightness=0.1, contrast=0.2, saturation=0.2, hue=0.05),
+    ]
+)
 
 
 # ==============================================================================
@@ -88,25 +96,7 @@ BASELINE_BN_AUG = ModelConfig(
     batch_normalization=True,
 )
 
-CUSTOM = ModelConfig(
-    name="custom",
-    dropout=0.5,
-    data_augmentation=True,
-    batch_normalization=True,
-    image_size=32,
-    base_channels=32,
-)
-
-CUSTOM_48 = ModelConfig(
-    name="custom_48",
-    dropout=0.5,
-    data_augmentation=True,
-    batch_normalization=True,
-    image_size=48,
-    base_channels=64,
-)
-
-CUSTOM_DEEP = ModelConfig(
+CUSTOM_MODEL = ModelConfig(
     name="custom_deep",
     dropout=0.5,
     data_augmentation=True,
@@ -130,29 +120,15 @@ SGDM = Hyperparameters(
     epochs=25, batch_size=64, optimizer_name="sgdm", learning_rate=0.01, momentum=0.9
 )
 
-# Custom model: more epochs + ReduceLROnPlateau
-ADAM_SCHEDULED = Hyperparameters(
-    epochs=40,
+ADAM_CUSTOM = Hyperparameters(
+    epochs=20,
     batch_size=64,
     optimizer_name="adam",
     learning_rate=0.001,
-    scheduler=SchedulerConfig(
-        name="reduce_on_plateau",
-        kwargs={"mode": "min", "factor": 0.5, "patience": 4},
-    ),
-)
-
-# Deep model: Cosine Annealing + Adam + Max Accuracy techniques
-ADAM_COSINE = Hyperparameters(
-    epochs=15,
-    batch_size=64,
-    optimizer_name="adam",
-    learning_rate=0.001,
-    weight_decay=1e-4,
     label_smoothing=0.1,
     scheduler=SchedulerConfig(
         name="cosine_annealing",
-        kwargs={"T_max": 15, "eta_min": 1e-6},
+        kwargs={"T_max": 20, "eta_min": 1e-6},
     ),
 )
 
@@ -162,22 +138,22 @@ OPTIMIZERS = [ADAM, SGD, SGDM]
 # ==============================================================================
 # 5. EXPERIMENT SUITES
 # ==============================================================================
-BASELINE_SUITE = MAKE_SUITE(BASELINE, OPTIMIZERS)
-BASELINE_BN_SUITE = MAKE_SUITE(BASELINE_BN, OPTIMIZERS)
-BASELINE_AUG_SUITE = MAKE_SUITE(BASELINE_AUG, OPTIMIZERS)
-BASELINE_BN_AUG_SUITE = MAKE_SUITE(BASELINE_BN_AUG, OPTIMIZERS)
-CUSTOM_SUITE = MAKE_SUITE(CUSTOM, [ADAM_SCHEDULED, SGD, SGDM])
+# Suites for comparative analysis (baseline variations)
+COMPARE_BASELINE = MAKE_SUITE(BASELINE, OPTIMIZERS)
+COMPARE_BN = MAKE_SUITE(BASELINE_BN, OPTIMIZERS)
+COMPARE_AUG = MAKE_SUITE(BASELINE_AUG, OPTIMIZERS)
+COMPARE_BN_AUG = MAKE_SUITE(BASELINE_BN_AUG, OPTIMIZERS)
 
-ALL = COMBINE_SUITES(
-    BASELINE_SUITE,
-    BASELINE_BN_SUITE,
-    BASELINE_AUG_SUITE,
-    BASELINE_BN_AUG_SUITE,
-    CUSTOM_SUITE,
+ALL_COMPARATIVES = COMBINE_SUITES(
+    COMPARE_BASELINE,
+    COMPARE_BN,
+    COMPARE_AUG,
+    COMPARE_BN_AUG,
 )
 
-FAST = MAKE_SUITE(BASELINE, [ADAM])
-ADAM_CUSTOM_DEEP = MAKE_SUITE(CUSTOM_DEEP, [ADAM_COSINE])
+# Single run execution suites
+RUN_BASELINE_ADAM = MAKE_SUITE(BASELINE, [ADAM])
+RUN_CUSTOM_ADAM = MAKE_SUITE(CUSTOM_MODEL, [ADAM_CUSTOM])
 
 
 # ==============================================================================
@@ -185,6 +161,10 @@ ADAM_CUSTOM_DEEP = MAKE_SUITE(CUSTOM_DEEP, [ADAM_COSINE])
 # ==============================================================================
 if __name__ == "__main__":
     from torchvision.datasets import GTSRB
+
+    from src.utils import parse_experiment_args
+
+    args = parse_experiment_args()
 
     print("Configuring seeds for reproducibility...")
     set_seed(42)
@@ -194,9 +174,12 @@ if __name__ == "__main__":
     GTSRB(root="./data", split="test", download=True)
     print("Dataset verified successfully!\n")
 
-    # Select experiment suite and transforms for execution
-    CHOOSEN_SUITE = ADAM_CUSTOM_DEEP
-    CHOOSEN_TRANSFORM = CUSTOM_TRANSFORM
+    if args.baseline:
+        print(">>> Starting BASELINE run...")
+        pipeline = Pipeline(suite=RUN_BASELINE_ADAM, transform=BASELINE_TRANSFORM)
+        pipeline.run()
 
-    pipeline = Pipeline(suite=CHOOSEN_SUITE, transform=CHOOSEN_TRANSFORM)
-    pipeline.run()
+    if args.custom:
+        print(">>> Starting CUSTOM run...")
+        pipeline = Pipeline(suite=RUN_CUSTOM_ADAM, transform=CUSTOM_TRANSFORM)
+        pipeline.run()
