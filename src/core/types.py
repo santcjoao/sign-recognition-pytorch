@@ -17,11 +17,15 @@ class ModelConfig:
     dropout: float = 0.0
     data_augmentation: bool = False
     batch_normalization: bool = False
+    image_size: int = 32
+    base_channels: int = 32
 
-# Custom model
+
 @dataclass
-class CustomModelConfig(ModelConfig):
-    pass
+class SchedulerConfig:
+    name: str
+    kwargs: dict[str, Any] = field(default_factory=dict)
+
 
 # Hyperparameters
 @dataclass
@@ -31,6 +35,7 @@ class Hyperparameters:
     optimizer_name: str
     learning_rate: float
     momentum: float = 0.0
+    scheduler: Optional[SchedulerConfig] = None
 
 
 # Results

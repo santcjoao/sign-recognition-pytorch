@@ -20,12 +20,18 @@ BASE_TRANSFORM = T.Compose(
 )
 
 
-def get_transform(transform: T.Compose | None = None) -> T.Compose:
+def get_transform(image_size: int, transform: T.Compose | None = None) -> T.Compose:
+    base = [
+        T.Resize((image_size, image_size)),
+        T.ToTensor(),
+        T.Normalize(mean=_MEAN, std=_STD),
+    ]
     if transform is None:
-        return BASE_TRANSFORM
+        return T.Compose(base)
+
     return T.Compose(
         [
-            T.Resize((32, 32)),
+            T.Resize((image_size, image_size)),
             transform,
             T.ToTensor(),
             T.Normalize(mean=_MEAN, std=_STD),
@@ -61,13 +67,15 @@ class Pipeline:
                 raise PipelineError(
                     "Transform must be provided when data_augmentation is True"
                 )
-            current_transform = get_transform(self.transform)
+            current_transform = get_transform(
+                plan.model_config.image_size, self.transform
+            )
         else:
-            current_transform = get_transform()
+            current_transform = get_transform(plan.model_config.image_size)
 
         # Get Dataloaders
         train_loader, val_loader, test_loader = get_dataloaders(
-            img_size=32,
+            img_size=plan.model_config.image_size,
             batch_size=plan.hyperparameters.batch_size,
             train_transform=current_transform,
         )

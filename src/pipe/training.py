@@ -1,12 +1,25 @@
-from typing import Any
+from typing import Any, Optional
 
 import torch
 import torch.nn as nn
+from torch.optim.lr_scheduler import (
+    CosineAnnealingLR,
+    ExponentialLR,
+    ReduceLROnPlateau,
+    StepLR,
+)
 from tqdm import tqdm
 
 from src import History, Hyperparameters
 
 OPTIMIZERS = {"adam", "sgd", "sgdm"}
+
+SCHEDULERS = {
+    "reduce_on_plateau": ReduceLROnPlateau,
+    "cosine_annealing": CosineAnnealingLR,
+    "step": StepLR,
+    "exponential": ExponentialLR,
+}
 
 
 class Trainer:
@@ -16,6 +29,7 @@ class Trainer:
         self.device = device
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = self._build_optimizer()
+        self.scheduler: Optional[Any] = self._build_scheduler()
 
     def _build_optimizer(self) -> torch.optim.Optimizer:
         opt_name = self.hyper.optimizer_name.lower().strip()
@@ -37,6 +51,20 @@ class Trainer:
                 lr=self.hyper.learning_rate,
                 momentum=self.hyper.momentum,
             )
+
+    def _build_scheduler(self) -> Optional[Any]:
+        cfg = self.hyper.scheduler
+        if cfg is None:
+            return None
+
+        name = cfg.name.lower().strip()
+        scheduler_cls = SCHEDULERS.get(name)
+
+        if scheduler_cls is None:
+            supported = ", ".join(f"'{k}'" for k in SCHEDULERS)
+            raise ValueError(f"Unknown scheduler: '{cfg.name}'. Supported: {supported}")
+
+        return scheduler_cls(self.optimizer, **cfg.kwargs)
 
     def train(self, train_loader: Any, val_loader: Any) -> History:
         history = History()
@@ -112,6 +140,15 @@ class Trainer:
                 f"Val Loss: {epoch_val_loss:.4f} | "
                 f"Val Acc: {epoch_val_acc:.4f}"
             )
+
+            # Step scheduler
+            if self.scheduler is not None:
+                if isinstance(self.scheduler, ReduceLROnPlateau):
+                    self.scheduler.step(epoch_val_loss)
+                else:
+                    self.scheduler.step()
+                current_lr = self.optimizer.param_groups[0]["lr"]
+                print(f"  Scheduler step → LR: {current_lr:.2e}")
 
             # Save best model
             if epoch_val_acc > best_val_acc:

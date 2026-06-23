@@ -6,6 +6,7 @@ from src.core import (
     Hyperparameters,
     LoadersTuple,
     ModelConfig,
+    SchedulerConfig,
     TestPredictions,
     TransformCallable,
 )
@@ -24,6 +25,7 @@ __all__ = [
     "ExperimentPlan",
     "ExperimentSuite",
     "Hyperparameters",
+    "SchedulerConfig",
     "History",
     "TestPredictions",
     "ExperimentResult",

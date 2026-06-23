@@ -7,7 +7,6 @@ class Baseline(nn.Module):
     def __init__(
         self,
         use_batch_norm: bool = False,
-        dropout_rate: float = 0.0,
         image_size: int = 32,
         num_classes: int = 43,
     ) -> None:
@@ -32,7 +31,6 @@ class Baseline(nn.Module):
 
         # FC
         self.fc1 = nn.Linear(conv_output_size, 256)
-        self.dropout = nn.Dropout(dropout_rate) if dropout_rate > 0.0 else nn.Identity()
         self.fc2 = nn.Linear(256, num_classes)
 
     def _get_conv_output_size(self) -> int:
@@ -61,7 +59,6 @@ class Baseline(nn.Module):
         # FC
         x = self.fc1(x)
         x = F.relu(x)
-        x = self.dropout(x)
         x = self.fc2(x)
 
         return x

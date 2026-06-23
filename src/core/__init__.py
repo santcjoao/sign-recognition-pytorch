@@ -6,6 +6,7 @@ from .types import (
     Hyperparameters,
     LoadersTuple,
     ModelConfig,
+    SchedulerConfig,
     TestPredictions,
     TransformCallable,
 )
@@ -13,6 +14,7 @@ from .types import (
 __all__ = [
     "ModelConfig",
     "Hyperparameters",
+    "SchedulerConfig",
     "History",
     "TransformCallable",
     "LoadersTuple",
