@@ -107,17 +107,17 @@ def plot_prediction_examples(
     save_path: str,
     raw_test_dataset: GTSRB,
 ):
-    """Plot a grid of 5 correct and 5 incorrect predictions using actual images."""
+    """Plot a grid of 5 correct and 20 incorrect predictions using actual images."""
     print(f"[{exp_name}] Generating image examples plot...")
 
     correct_idx = np.where(y_true == y_pred)[0]
     incorrect_idx = np.where(y_true != y_pred)[0]
 
-    if len(correct_idx) >= 5 and len(incorrect_idx) >= 5:
+    if len(correct_idx) >= 5 and len(incorrect_idx) >= 20:
         sampled_correct = random.sample(list(correct_idx), 5)
-        sampled_incorrect = random.sample(list(incorrect_idx), 5)
+        sampled_incorrect = random.sample(list(incorrect_idx), 20)
 
-        fig, axes = plt.subplots(2, 5, figsize=(20, 9))
+        fig, axes = plt.subplots(5, 5, figsize=(20, 20))
         fig.suptitle(f"Prediction Examples - {exp_name}", fontsize=16)
 
         # Row 0 — correct predictions (green)
@@ -133,11 +133,17 @@ def plot_prediction_examples(
             )
             ax.axis("off")
 
-        # Row 1 — incorrect predictions (red)
+        # Fill the remaining cells in row 0 (columns 5) with empty space
+        for i in range(5, 5):
+            axes[0, i].axis("off")
+
+        # Rows 1-4 — incorrect predictions (red)
         axes[1, 0].set_ylabel("Incorretas", fontsize=11, color="red", labelpad=8)
-        for i, idx in enumerate(sampled_incorrect):
+        for idx_num, idx in enumerate(sampled_incorrect):
+            row = 1 + idx_num // 5
+            col = idx_num % 5
             img, _ = raw_test_dataset[idx]
-            ax = axes[1, i]
+            ax = axes[row, col]
             ax.imshow(img)
             ax.set_title(
                 f"TRUE: {GTSRB_CLASSES[y_true[idx]]}\n"
