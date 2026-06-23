@@ -15,7 +15,6 @@ from src import BASE_TRANSFORM, GTSRB_CLASSES, get_dataloaders, save_predictions
 RUNS_DIR = "results/runs"
 COMPARATIVES_DIR = "results/comparatives"
 
-
 def get_ground_truth_labels():
     """Extract ground truth labels from the test DataLoader."""
     print("Loading test DataLoader to extract ground truth labels...")
@@ -29,7 +28,6 @@ def get_ground_truth_labels():
         y_true.extend(targets.tolist())
 
     return np.array(y_true)
-
 
 def plot_training_curves(history: dict, exp_name: str, save_path: str):
     """Generate and save loss and accuracy training curves."""
@@ -56,7 +54,6 @@ def plot_training_curves(history: dict, exp_name: str, save_path: str):
     plt.savefig(os.path.join(save_path, "curves_plot.png"))
     plt.close()
 
-
 def plot_easiest_hardest_classes(class_accuracies: list, exp_name: str, save_path: str):
     """Plot the Top 5 and Bottom 5 classes by accuracy."""
     class_perf = [(GTSRB_CLASSES[i], acc) for i, acc in enumerate(class_accuracies)]
@@ -82,7 +79,6 @@ def plot_easiest_hardest_classes(class_accuracies: list, exp_name: str, save_pat
     plt.savefig(os.path.join(save_path, "easiest_hardest_classes.png"))
     plt.close()
 
-
 def plot_accuracy_vs_support(class_counts: list, class_accuracies: list, exp_name: str, save_path: str):
     """Scatter plot: Accuracy vs. Number of examples in the test set."""
     plt.figure(figsize=(10, 6))
@@ -95,45 +91,57 @@ def plot_accuracy_vs_support(class_counts: list, class_accuracies: list, exp_nam
     plt.savefig(os.path.join(save_path, "acc_vs_support.png"))
     plt.close()
 
-
-def plot_prediction_examples(y_true: np.ndarray, y_pred: np.ndarray, exp_name: str, save_path: str):
+def plot_prediction_examples(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    exp_name: str,
+    save_path: str,
+    raw_test_dataset: GTSRB,
+):
     """Plot a grid of 5 correct and 5 incorrect predictions using actual images."""
     print(f"[{exp_name}] Generating image examples plot...")
-    
-    # Extract indices
+
     correct_idx = np.where(y_true == y_pred)[0]
     incorrect_idx = np.where(y_true != y_pred)[0]
 
-    # Sample randomly
     if len(correct_idx) >= 5 and len(incorrect_idx) >= 5:
         sampled_correct = random.sample(list(correct_idx), 5)
         sampled_incorrect = random.sample(list(incorrect_idx), 5)
-        
-        # Load raw test dataset (no tensor transforms to plot PIL images directly)
-        raw_test_dataset = GTSRB(root="./data", split="test", download=True)
-        
+
         fig, axes = plt.subplots(2, 5, figsize=(20, 9))
         fig.suptitle(f"Prediction Examples - {exp_name}", fontsize=16)
 
-        # Plot Correct
+        # Row 0 — correct predictions (green)
+        axes[0, 0].set_ylabel("Corretas", fontsize=11, color="green", labelpad=8)
         for i, idx in enumerate(sampled_correct):
             img, _ = raw_test_dataset[idx]
             ax = axes[0, i]
             ax.imshow(img)
-            ax.set_title(f"TRUE & PRED:\n{GTSRB_CLASSES[y_true[idx]]}", color="green", fontsize=9)
-            ax.axis('off')
+            ax.set_title(
+                f"TRUE & PRED:\n{GTSRB_CLASSES[y_true[idx]]}",
+                color="green",
+                fontsize=9,
+            )
+            ax.axis("off")
 
-        # Plot Incorrect
+        # Row 1 — incorrect predictions (red)
+        axes[1, 0].set_ylabel("Incorretas", fontsize=11, color="red", labelpad=8)
         for i, idx in enumerate(sampled_incorrect):
             img, _ = raw_test_dataset[idx]
             ax = axes[1, i]
             ax.imshow(img)
-            ax.set_title(f"TRUE: {GTSRB_CLASSES[y_true[idx]]}\nPRED: {GTSRB_CLASSES[y_pred[idx]]}", color="red", fontsize=9)
-            ax.axis('off')
+            ax.set_title(
+                f"TRUE: {GTSRB_CLASSES[y_true[idx]]}\nPRED: {GTSRB_CLASSES[y_pred[idx]]}",
+                color="red",
+                fontsize=9,
+            )
+            ax.axis("off")
 
         plt.tight_layout()
         plt.savefig(os.path.join(save_path, "prediction_examples.png"))
         plt.close()
+    else:
+        print(f"[{exp_name}] Not enough correct or incorrect samples to plot examples.")
 
 def plot_all_class_accuracies(class_accuracies: list, exp_name: str, save_path: str):
     """Barplot horizontal com acurácia de todas as 43 classes."""
@@ -153,7 +161,13 @@ def plot_all_class_accuracies(class_accuracies: list, exp_name: str, save_path: 
     plt.savefig(os.path.join(save_path, "all_class_accuracies.png"))
     plt.close()
 
-def compute_metrics_and_plots(y_true: np.ndarray, y_pred: np.ndarray, exp_name: str, save_path: str) -> dict:
+def compute_metrics_and_plots(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    exp_name: str,
+    save_path: str,
+    raw_test_dataset: GTSRB,
+) -> dict:
     """Compute all metrics and generate individual experiment plots."""
     global_acc = accuracy_score(y_true, y_pred)
     cm = confusion_matrix(y_true, y_pred, labels=list(range(43)))
@@ -185,8 +199,8 @@ def compute_metrics_and_plots(y_true: np.ndarray, y_pred: np.ndarray, exp_name: 
     # 4. Plot all class' acuracies individually
     plot_all_class_accuracies(class_accuracies, exp_name, save_path)
 
-    # 4. Image Examples Plot
-    plot_prediction_examples(y_true, y_pred, exp_name, save_path)
+    # 5. Image Examples Plot
+    plot_prediction_examples(y_true, y_pred, exp_name, save_path, raw_test_dataset)
 
     # Calculate Top Confusions
     confusions = []
@@ -251,6 +265,10 @@ def main():
         return
 
     y_true = get_ground_truth_labels()
+
+    print("Loading raw test dataset for image examples...")
+    raw_test_dataset = GTSRB(root="./data", split="test", download=True)
+
     experiments = [d for d in os.listdir(RUNS_DIR) if os.path.isdir(os.path.join(RUNS_DIR, d))]
     results_summary = []
 
@@ -271,7 +289,7 @@ def main():
             df_preds = df_preds.sort_values(by="image_index")
             y_pred = df_preds["predicted_class"].values
 
-            metrics = compute_metrics_and_plots(y_true, y_pred, exp_name, exp_path)
+            metrics = compute_metrics_and_plots(y_true, y_pred, exp_name, exp_path, raw_test_dataset)
             results_summary.append(metrics)
             print(f" -> Experiment '{exp_name}' processed successfully.")
 
@@ -290,7 +308,7 @@ def main():
         best_exp = df_ranking.iloc[0]
         
         print("\n" + "=" * 80)
-        print(f"🏆 BEST MODEL DETECTED: {best_exp['experiment']}")
+        print(f"BEST MODEL DETECTED: {best_exp['experiment']}")
         print(f"Global Accuracy: {best_exp['global_acc']:.4f} | Macro Accuracy: {best_exp['macro_acc']:.4f}")
         print("=" * 80)
 
