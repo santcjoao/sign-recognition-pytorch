@@ -10,7 +10,7 @@ from src.core import (
     TestPredictions,
     TransformCallable,
 )
-from src.pipe import BASE_TRANSFORM, Pipeline
+from src.pipe import Pipeline, get_transform
 from src.utils.gtsrb import (
     _MEAN,
     _STD,
@@ -31,7 +31,7 @@ __all__ = [
     "ExperimentResult",
     "TransformCallable",
     "LoadersTuple",
-    "BASE_TRANSFORM",
+    "get_transform",
     "get_dataloaders",
     "save_predictions",
     "_MEAN",

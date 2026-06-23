@@ -21,6 +21,7 @@ class Custom(nn.Module):
         dropout_rate: float = 0.4,
         image_size: int = 32,
         base_channels: int = 32,
+        num_blocks: int = 3,
         num_classes: int = 43,
     ) -> None:
         super().__init__()
@@ -50,6 +51,16 @@ class Custom(nn.Module):
         )
         self.bn3 = nn.BatchNorm2d(c3) if use_batch_norm else nn.Identity()
         self.pool3 = nn.MaxPool2d(kernel_size=2, stride=2)
+
+        self.num_blocks = num_blocks
+        if self.num_blocks >= 4:
+            c4 = base_channels * 8
+            self.conv4 = nn.Conv2d(
+                in_channels=c3, out_channels=c4, kernel_size=3, padding=1
+            )
+            self.bn4 = nn.BatchNorm2d(c4) if use_batch_norm else nn.Identity()
+            self.pool4 = nn.MaxPool2d(kernel_size=2, stride=2)
+
         self.dropout_conv = nn.Dropout2d(p=0.1)
 
         # Dynamically compute flatten size
@@ -65,7 +76,10 @@ class Custom(nn.Module):
         with torch.no_grad():
             x = self.pool1(F.relu(self.bn1(self.conv1(dummy))))
             x = self.pool2(F.relu(self.bn2(self.conv2(x))))
-            x = self.dropout_conv(self.pool3(F.relu(self.bn3(self.conv3(x)))))
+            x = self.pool3(F.relu(self.bn3(self.conv3(x))))
+            if self.num_blocks >= 4:
+                x = self.pool4(F.relu(self.bn4(self.conv4(x))))
+            x = self.dropout_conv(x)
         return int(x.numel())
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -86,6 +100,14 @@ class Custom(nn.Module):
         x = self.bn3(x)
         x = F.relu(x)
         x = self.pool3(x)
+
+        # Conv 4
+        if self.num_blocks >= 4:
+            x = self.conv4(x)
+            x = self.bn4(x)
+            x = F.relu(x)
+            x = self.pool4(x)
+
         x = self.dropout_conv(x)
 
         # Flatten

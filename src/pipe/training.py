@@ -36,7 +36,7 @@ class Trainer:
         if opt_name not in OPTIMIZERS:
             opts = ", ".join(OPTIMIZERS)
             raise ValueError(
-                f"Erro: '{opt_name}' não é um otimizador válido. Escolha entre: {opts}"
+                f"Error: '{opt_name}' is not a valid optimizer. Choose from: {opts}"
             )
 
         if opt_name == "adam":
@@ -75,7 +75,7 @@ class Trainer:
         best_state_dict = None
 
         print(
-            f"Treinando por {self.hyper.epochs} épocas com "
+            f"Training for {self.hyper.epochs} epochs with "
             f"{self.hyper.optimizer_name.upper()}..."
         )
 

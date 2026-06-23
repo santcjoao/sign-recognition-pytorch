@@ -19,6 +19,7 @@ class ModelConfig:
     batch_normalization: bool = False
     image_size: int = 32
     base_channels: int = 32
+    num_blocks: int = 3
 
 
 @dataclass

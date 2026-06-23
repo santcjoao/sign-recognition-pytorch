@@ -1,6 +1,6 @@
-from src.pipe.pipeline import BASE_TRANSFORM, Pipeline
+from src.pipe.pipeline import Pipeline, get_transform
 
 __all__ = [
     "Pipeline",
-    "BASE_TRANSFORM",
+    "get_transform",
 ]

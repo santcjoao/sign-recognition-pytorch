@@ -35,6 +35,7 @@ def _build_custom(config: ModelConfig, num_classes: int) -> nn.Module:
         dropout_rate=config.dropout,
         image_size=config.image_size,
         base_channels=config.base_channels,
+        num_blocks=config.num_blocks,
         num_classes=num_classes,
     )
 

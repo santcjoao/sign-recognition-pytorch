@@ -10,7 +10,7 @@ import torch
 from sklearn.metrics import accuracy_score, confusion_matrix
 from torchvision.datasets import GTSRB
 
-from src import BASE_TRANSFORM, GTSRB_CLASSES, get_dataloaders, save_predictions
+from src import GTSRB_CLASSES, get_dataloaders, get_transform, save_predictions
 
 RUNS_DIR = "results/runs"
 COMPARATIVES_DIR = "results/comparatives"
@@ -20,7 +20,7 @@ def get_ground_truth_labels():
     """Extract ground truth labels from the test DataLoader."""
     print("Loading test DataLoader to extract ground truth labels...")
     _, _, test_loader = get_dataloaders(
-        train_transform=BASE_TRANSFORM,
+        train_transform=get_transform(32),
         batch_size=64,
     )
 
@@ -140,7 +140,8 @@ def plot_prediction_examples(
             ax = axes[1, i]
             ax.imshow(img)
             ax.set_title(
-                f"TRUE: {GTSRB_CLASSES[y_true[idx]]}\nPRED: {GTSRB_CLASSES[y_pred[idx]]}",
+                f"TRUE: {GTSRB_CLASSES[y_true[idx]]}\n"
+                f"PRED: {GTSRB_CLASSES[y_pred[idx]]}",
                 color="red",
                 fontsize=9,
             )
@@ -154,7 +155,7 @@ def plot_prediction_examples(
 
 
 def plot_all_class_accuracies(class_accuracies: list, exp_name: str, save_path: str):
-    """Barplot horizontal com acurácia de todas as 43 classes."""
+    """Horizontal barplot with accuracy for all 43 classes."""
     labels = [GTSRB_CLASSES[i] for i in range(43)]
     colors = [
         "green" if acc >= np.mean(class_accuracies) else "red"
@@ -202,7 +203,8 @@ def compute_metrics_and_plots(
     plt.figure(figsize=(22, 18))
     sns.heatmap(cm, annot=False, cmap="magma", cbar=True)
     plt.title(
-        f"Confusion Matrix - {exp_name}\nGlobal Acc: {global_acc:.4f} | Macro Acc: {macro_acc:.4f}",
+        f"Confusion Matrix - {exp_name}\n"
+        f"Global Acc: {global_acc:.4f} | Macro Acc: {macro_acc:.4f}",
         fontsize=16,
     )
     plt.xlabel("Predicted Class", fontsize=12)
@@ -329,7 +331,7 @@ def main():
             by="global_acc", ascending=False
         )
 
-        # Drop complex objects (raw_preds, top_confusions, hardest_classes) for the CSV table
+        # Drop complex objects (raw_preds, top_confusions, etc) for the CSV table
         df_csv = df_ranking.drop(
             columns=["raw_preds", "top_confusions", "hardest_classes"]
         )
@@ -345,17 +347,19 @@ def main():
         print("\n" + "=" * 80)
         print(f"BEST MODEL DETECTED: {best_exp['experiment']}")
         print(
-            f"Global Accuracy: {best_exp['global_acc']:.4f} | Macro Accuracy: {best_exp['macro_acc']:.4f}"
+            f"Global Accuracy: {best_exp['global_acc']:.4f} | "
+            f"Macro Accuracy: {best_exp['macro_acc']:.4f}"
         )
         print("=" * 80)
 
-        print("\n[!] Top 5 Erros Frequentes (Pares de Confusão):")
+        print("\n[!] Top 5 Frequent Errors (Confusion Pairs):")
         for real_cls, pred_cls, count in best_exp["top_confusions"]:
             print(
-                f"  -> '{real_cls}' foi incorretamente previsto como '{pred_cls}' {count} vezes."
+                f"  -> '{real_cls}' was incorrectly predicted as "
+                f"'{pred_cls}' {count} times."
             )
 
-        print("\n[!] Top 5 Classes Mais Difíceis (Menor Acurácia):")
+        print("\n[!] Top 5 Hardest Classes (Lowest Accuracy):")
         for cls_name, acc in best_exp["hardest_classes"]:
             print(f"  -> {cls_name}: {acc:.2%}")
 

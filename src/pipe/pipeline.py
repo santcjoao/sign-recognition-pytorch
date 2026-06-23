@@ -11,14 +11,6 @@ from src.pipe.testing import Tester
 from src.pipe.training import Trainer
 from src.utils.gtsrb import _MEAN, _STD, get_dataloaders, save_predictions
 
-BASE_TRANSFORM = T.Compose(
-    [
-        T.Resize((32, 32)),
-        T.ToTensor(),
-        T.Normalize(mean=_MEAN, std=_STD),
-    ]
-)
-
 
 def get_transform(image_size: int, transform: T.Compose | None = None) -> T.Compose:
     base = [

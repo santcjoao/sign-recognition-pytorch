@@ -98,12 +98,22 @@ CUSTOM = ModelConfig(
 )
 
 CUSTOM_48 = ModelConfig(
-    name="custom",
+    name="custom_48",
     dropout=0.5,
     data_augmentation=True,
     batch_normalization=True,
     image_size=48,
     base_channels=64,
+)
+
+CUSTOM_DEEP = ModelConfig(
+    name="custom_deep",
+    dropout=0.5,
+    data_augmentation=True,
+    batch_normalization=True,
+    image_size=48,
+    base_channels=64,
+    num_blocks=4,
 )
 
 
@@ -122,13 +132,24 @@ SGDM = Hyperparameters(
 
 # Custom model: more epochs + ReduceLROnPlateau
 ADAM_SCHEDULED = Hyperparameters(
-    epochs=25,
+    epochs=40,
     batch_size=64,
     optimizer_name="adam",
     learning_rate=0.001,
     scheduler=SchedulerConfig(
         name="reduce_on_plateau",
         kwargs={"mode": "min", "factor": 0.5, "patience": 4},
+    ),
+)
+
+ADAM_COSINE = Hyperparameters(
+    epochs=25,
+    batch_size=64,
+    optimizer_name="adam",
+    learning_rate=0.001,
+    scheduler=SchedulerConfig(
+        name="cosine_annealing",
+        kwargs={"T_max": 50, "eta_min": 1e-6},
     ),
 )
 
@@ -155,6 +176,7 @@ ALL = COMBINE_SUITES(
 FAST = MAKE_SUITE(BASELINE, [ADAM])
 FAST_CUSTOM = MAKE_SUITE(CUSTOM, [ADAM_SCHEDULED])
 FAST_CUSTOM_48 = MAKE_SUITE(CUSTOM_48, [ADAM_SCHEDULED])
+FAST_CUSTOM_DEEP = MAKE_SUITE(CUSTOM_DEEP, [ADAM_COSINE])
 
 
 # ==============================================================================
@@ -171,8 +193,8 @@ if __name__ == "__main__":
     GTSRB(root="./data", split="test", download=True)
     print("Dataset verified successfully!\n")
 
-    # Seleção da suíte de experimentos e transformações para execução
-    CHOOSEN_SUITE = FAST_CUSTOM_48
+    # Select experiment suite and transforms for execution
+    CHOOSEN_SUITE = FAST_CUSTOM_DEEP
     CHOOSEN_TRANSFORM = CUSTOM_TRANSFORM
 
     pipeline = Pipeline(suite=CHOOSEN_SUITE, transform=CHOOSEN_TRANSFORM)
