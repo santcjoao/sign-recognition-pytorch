@@ -59,7 +59,6 @@ def create_plan(model: ModelConfig, hp: Hyperparameters) -> ExperimentPlan:
         hyperparameters=hp,
     )
 
-
 # Planos Individuais do Baseline
 BASELINE_ADAM = create_plan(BASELINE, WITH_ADAM)
 BASELINE_SGD = create_plan(BASELINE, WITH_SGD)
