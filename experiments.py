@@ -100,7 +100,7 @@ BASELINE_BN_AUG = ModelConfig(
 )
 
 CUSTOM_MODEL = ModelConfig(
-    name="custom_deep",
+    name="custom",
     dropout=0.3,
     data_augmentation=True,
     batch_normalization=True,
