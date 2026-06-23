@@ -108,7 +108,9 @@ CUSTOM_TRANSFORM = T.Compose(
     [
         T.RandomRotation(15),
         T.RandomAffine(degrees=15, translate=(0.1, 0.1), scale=(0.9, 1.1)),
-        T.RandomCrop(28, padding=2),
+        T.RandomApply([
+            T.GaussianBlur(kernel_size=3, sigma=(0.1, 1.0))
+        ], p=0.3),
         T.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1)
     ]
 )
