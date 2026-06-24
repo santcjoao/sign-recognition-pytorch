@@ -5,7 +5,4 @@ pandas
 matplotlib
 seaborn
 scikit-learn
-jupyterlab
 tqdm
-mypy
-ruff
