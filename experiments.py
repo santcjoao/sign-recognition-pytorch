@@ -181,16 +181,13 @@ if __name__ == "__main__":
         pipeline.run()
 
     if args.compare_optimizers:
-        print(
-            ">>> Starting COMPARE-OPTIMIZERS run (baseline_bn with Adam/SGD/SGDm)..."
+        print(">>> Starting COMPARE-OPTIMIZERS run (baseline_bn with Adam/SGD/SGDm)...")
+        pipeline = Pipeline(
+            suite=COMPARE_OPTIMIZERS_SUITE, transform=BASELINE_TRANSFORM
         )
-        pipeline = Pipeline(suite=COMPARE_OPTIMIZERS_SUITE, transform=BASELINE_TRANSFORM)
         pipeline.run()
 
     if args.compare_norm:
-        print(
-            ">>> Starting COMPARE-NORMALIZATION run (baseline vs baseline_bn)..."
-        )
+        print(">>> Starting COMPARE-NORMALIZATION run (baseline vs baseline_bn)...")
         pipeline = Pipeline(suite=COMPARE_NORM_SUITE, transform=BASELINE_TRANSFORM)
         pipeline.run()
-
