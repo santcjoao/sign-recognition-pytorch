@@ -1,34 +1,34 @@
-# GTSRB — Classificação de Placas de Trânsito com CNNs
+# GTSRB - Classificação de Placas de Trânsito com CNNs
 
-Pipeline modular em PyTorch para classificação de imagens do dataset **GTSRB** (German Traffic Sign Recognition Benchmark — 43 classes).
+Pipeline modular em PyTorch para classificação de imagens do dataset **GTSRB** (German Traffic Sign Recognition Benchmark - 43 classes).
 
 ---
 
 ## Arquitetura
 
 ```text
-experiments.py          # Ponto de entrada — declara configs e executa experimentos
+experiments.py          # Ponto de entrada - declara configs e executa experimentos
 plots.py                # Gera gráficos e exporta CSV final após os runs
 │
 ├── src/
 │   ├── core/types.py   # Dataclasses imutáveis (ModelConfig, Hyperparameters, ...)
 │   ├── models/
-│   │   ├── baseline.py # CNN simples: Conv→ReLU→Pool ×2 → FC ×2
+│   │   ├── baseline.py # CNN simples: Conv -> ReLU -> Pool (2x) -> FC (2x)
 │   │   ├── custom.py   # CNN profunda: 3-4 blocos conv, Dropout, canais configuráveis
-│   │   └── factory.py  # build_model() — resolve config.name → nn.Module
+│   │   └── factory.py  # build_model() - resolve config.name -> nn.Module
 │   ├── pipe/
-│   │   ├── pipeline.py # Orquestrador: carrega dados → treina → testa → salva resultados
+│   │   ├── pipeline.py # Orquestrador: carrega dados -> treina -> testa -> salva resultados
 │   │   ├── training.py # Loop de treino/validação com early stopping por val_acc
 │   │   └── testing.py  # Inferência no conjunto de teste
 │   └── utils/
-│       ├── gtsrb.py    # Arquivo do professor (NÃO modificar)
+│       ├── gtsrb.py    # Arquivo do professor
 │       └── args.py     # Parser de argumentos CLI
 │
 ├── data/               # Dataset GTSRB (download automático)
 └── results/            # Saídas: pesos (.pth), histórico (.json), predições (.csv)
 ```
 
-O `Pipeline` recebe uma suíte de experimentos (lista de configs imutáveis) e, para cada um, executa: **carregamento de dados → treino → teste → serialização em disco**. `Trainer` e `Tester` operam apenas em memória; toda persistência fica no `Pipeline`.
+O `Pipeline` recebe uma suíte de experimentos (lista de configs imutáveis) e, para cada um, executa: **carregamento de dados -> treino -> teste -> serialização em disco**. `Trainer` e `Tester` operam apenas em memória; toda persistência fica no `Pipeline`.
 
 ---
 
@@ -69,9 +69,9 @@ O dataset é baixado automaticamente na primeira execução.
 | Arquivo | Descrição |
 |---|---|
 | `curves_plot.png` | Curvas de loss e acurácia ao longo das épocas |
-| `confusion_matrix.png` | Matriz de confusão completa (43×43) |
+| `confusion_matrix.png` | Matriz de confusão completa (43x43) |
 | `easiest_hardest_classes.png` | Top 5 classes mais fáceis e mais difíceis |
-| `acc_vs_support.png` | Scatter: acurácia × nº de exemplos no teste |
+| `acc_vs_support.png` | Scatter: acurácia x número de exemplos no teste |
 | `all_class_accuracies.png` | Barplot com acurácia de todas as 43 classes |
 | `prediction_examples.png` | Grid de 5 acertos e 20 erros com imagens reais |
 
@@ -84,5 +84,5 @@ O dataset é baixado automaticamente na primeira execução.
 | `compare_augmentation.png` | Impacto do Data Augmentation |
 
 **Outros:**
-- `results/metrics_summary.csv` — tabela consolidada ordenada por desempenho.
-- `JOAO_NATHAN_THIAGO_RESULTS.csv` — submissão final com predições do melhor modelo, no formato de `save_predictions`.
+- `results/metrics_summary.csv` - tabela consolidada ordenada por desempenho.
+- `JOAO_NATHAN_THIAGO_RESULTS.csv` - submissão final com predições do melhor modelo, no formato de `save_predictions`.
