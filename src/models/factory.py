@@ -15,20 +15,6 @@ def _build_baseline(config: ModelConfig, num_classes: int) -> nn.Module:
         num_classes=num_classes,
     )
 
-
-def _build_resnet18(config: ModelConfig, num_classes: int) -> nn.Module:
-    model = models.resnet18(weights=None)
-    model.fc = nn.Linear(model.fc.in_features, num_classes)
-    return model
-
-
-def _build_mobilenet_v3(config: ModelConfig, num_classes: int) -> nn.Module:
-    model = models.mobilenet_v3_large(weights=None)
-    in_features = model.classifier[3].in_features
-    model.classifier[3] = nn.Linear(in_features, num_classes)
-    return model
-
-
 def _build_custom(config: ModelConfig, num_classes: int) -> nn.Module:
     return Custom(
         use_batch_norm=config.batch_normalization,
@@ -42,8 +28,6 @@ def _build_custom(config: ModelConfig, num_classes: int) -> nn.Module:
 
 MODEL_REGISTRY: Dict[str, Callable[[ModelConfig, int], nn.Module]] = {
     "baseline": _build_baseline,
-    "resnet18": _build_resnet18,
-    "mobilenet_v3_large": _build_mobilenet_v3,
     "custom": _build_custom,
 }
 
@@ -55,12 +39,12 @@ def build_model(config: ModelConfig, num_classes: int = 43) -> nn.Module:
     keys = [
         "baseline",
         "custom",
-        "resnet",
-        "vgg",
     ]
+    builder = None
     for key in keys:
         if key in name:
             builder = MODEL_REGISTRY.get(key)
+            break
 
     if builder is None:
         supported = ", ".join(f"'{k}'" for k in MODEL_REGISTRY.keys())

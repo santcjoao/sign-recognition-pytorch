@@ -1,67 +1,61 @@
-# GTSRB Machine Learning Pipeline
+# GTSRB — Classificação de Placas de Trânsito com CNNs
 
-Este repositório contém um pipeline modular desenvolvido em PyTorch para a classificação do conjunto de dados GTSRB (German Traffic Sign Recognition Benchmark).
-
-O projeto adota o padrão de Especificação Executável, em que as configurações de experimentos e transformações são declaradas de forma imutável, enquanto o pipeline orquestra a execução dos estágios de treino e teste e centraliza as operações de leitura e escrita.
+Pipeline modular em PyTorch para classificação de imagens do dataset **GTSRB** (German Traffic Sign Recognition Benchmark — 43 classes).
 
 ---
 
-## Arquitetura do Projeto
+## Arquitetura
 
 ```text
-├── data/                  # Dados do GTSRB (download automático)
-├── results/               # Saída de resultados (logs, pesos e predições)
+experiments.py          # Ponto de entrada — declara configs e executa experimentos
+plots.py                # Gera gráficos e exporta CSV final após os runs
+│
 ├── src/
-│   ├── core/types.py      # Dataclasses de configuração e resultados
-│   ├── models/baseline.py # Arquitetura Baseline CNN parametrizável
-│   ├── pipe/              # Módulos de orquestração, treino e teste
-│   └── utils/gtsrb.py     # Utilitários obrigatórios fornecidos (seed=42)
-├── experiments.py         # Declaração e execução de suítes de testes
-├── pyproject.toml         # Configuração centralizada para ferramentas Ruff e Mypy
-└── requirements.txt       # Lista de dependências de software
+│   ├── core/types.py   # Dataclasses imutáveis (ModelConfig, Hyperparameters, ...)
+│   ├── models/
+│   │   ├── baseline.py # CNN simples: Conv→ReLU→Pool ×2 → FC ×2
+│   │   ├── custom.py   # CNN profunda: 3-4 blocos conv, Dropout, canais configuráveis
+│   │   └── factory.py  # build_model() — resolve config.name → nn.Module
+│   ├── pipe/
+│   │   ├── pipeline.py # Orquestrador: carrega dados → treina → testa → salva resultados
+│   │   ├── training.py # Loop de treino/validação com early stopping por val_acc
+│   │   └── testing.py  # Inferência no conjunto de teste
+│   └── utils/
+│       ├── gtsrb.py    # Arquivo do professor (NÃO modificar)
+│       └── args.py     # Parser de argumentos CLI
+│
+├── data/               # Dataset GTSRB (download automático)
+└── results/            # Saídas: pesos (.pth), histórico (.json), predições (.csv)
 ```
 
----
-
-## Requisitos Acadêmicos Atendidos
-
-* **Separação de Dados:** Divisão determinística (80/20) realizada via `get_dataloaders()` de `src/utils/gtsrb.py` (semente de validação fixa em 42).
-* **Desacoplamento de I/O:** Os módulos `Trainer` e `Tester` realizam operações exclusivamente em memória. A persistência em disco (pesos `.pth`, logs em `.json` e predições em `.csv`) é realizada unicamente pelo módulo `Pipeline`.
-* **Exportação de Predições:** Geração automatizada do arquivo CSV de predições conforme formato especificado pela função utilitária `save_predictions`.
-* **Modelo Parametrizável:** Rede sequencial flexível (`Conv-ReLU-Pool-Conv-ReLU-Pool-Linear-ReLU-Linear`) com suporte a Batch Normalization e Dropout configuráveis e cálculo automático de dimensões.
+O `Pipeline` recebe uma suíte de experimentos (lista de configs imutáveis) e, para cada um, executa: **carregamento de dados → treino → teste → serialização em disco**. `Trainer` e `Tester` operam apenas em memória; toda persistência fica no `Pipeline`.
 
 ---
 
-## Configuração e Execução
+## Setup
 
-### 1. Configurar o Ambiente
-Para inicializar o ambiente virtual e instalar as dependências necessárias de acordo com o sistema operacional:
-
-#### Windows:
-Execute os seguintes comandos no terminal (PowerShell ou Prompt de Comando) na raiz do projeto:
-```powershell
+```bash
 python -m venv venv
-.\venv\Scripts\activate
-python -m pip install --upgrade pip
+source venv/bin/activate   # Windows: .\venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-#### Linux / macOS:
-Execute os seguintes comandos no terminal na raiz do projeto:
+## Uso
+
 ```bash
-python3 -m venv venv
-source venv/bin/activate
-python3 -m pip install --upgrade pip
-pip install -r requirements.txt
+# Treinar modelos individuais
+python experiments.py --baseline
+python experiments.py --custom
+
+# Experimentos comparativos
+python experiments.py --compare-optimizers   # SGD / SGDm / Adam (baseline + BN)
+python experiments.py --compare-norm         # Sem vs Com Batch Normalization
+
+# Combinar flags livremente
+python experiments.py --baseline --compare-optimizers --compare-norm
+
+# Gerar gráficos e CSV final (após rodar experimentos)
+python plots.py
 ```
 
-### 2. Executar Experimentos
-Configure a suíte e a transformação a serem avaliadas nas constantes ao final do arquivo `experiments.py` e execute o script de entrada:
-```bash
-python3 experiments.py
-```
-```python
-# Configuração em experiments.py
-CHOOSEN_SUITE = BASELINE_SUITE
-CHOOSEN_TRANSFORM = IDENTITY_TRANSFORM
-```
+O dataset é baixado automaticamente na primeira execução.

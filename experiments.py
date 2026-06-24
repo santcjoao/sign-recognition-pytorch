@@ -141,20 +141,13 @@ OPTIMIZERS = [ADAM, SGD, SGDM]
 # ==============================================================================
 # 5. EXPERIMENT SUITES
 # ==============================================================================
-# Suites for comparative analysis (baseline variations)
-COMPARE_BASELINE = MAKE_SUITE(BASELINE, OPTIMIZERS)
-COMPARE_BN = MAKE_SUITE(BASELINE_BN, OPTIMIZERS)
-COMPARE_AUG = MAKE_SUITE(BASELINE_AUG, OPTIMIZERS)
-COMPARE_BN_AUG = MAKE_SUITE(BASELINE_BN_AUG, OPTIMIZERS)
-
-ALL_COMPARATIVES = COMBINE_SUITES(
-    COMPARE_BASELINE,
-    COMPARE_BN,
-    COMPARE_AUG,
-    COMPARE_BN_AUG,
+# Comparative suites
+COMPARE_OPTIMIZERS_SUITE = MAKE_SUITE(BASELINE_BN, OPTIMIZERS)
+COMPARE_NORM_SUITE = ExperimentSuite(
+    [CREATE_PLAN(BASELINE, ADAM), CREATE_PLAN(BASELINE_BN, ADAM)]
 )
 
-# Single run execution suites
+# Single run suites
 RUN_BASELINE_ADAM = MAKE_SUITE(BASELINE, [ADAM])
 RUN_CUSTOM_ADAM = MAKE_SUITE(CUSTOM_MODEL, [ADAM_CUSTOM])
 
@@ -186,3 +179,18 @@ if __name__ == "__main__":
         print(">>> Starting CUSTOM run...")
         pipeline = Pipeline(suite=RUN_CUSTOM_ADAM, transform=CUSTOM_TRANSFORM)
         pipeline.run()
+
+    if args.compare_optimizers:
+        print(
+            ">>> Starting COMPARE-OPTIMIZERS run (baseline_bn with Adam/SGD/SGDm)..."
+        )
+        pipeline = Pipeline(suite=COMPARE_OPTIMIZERS_SUITE, transform=BASELINE_TRANSFORM)
+        pipeline.run()
+
+    if args.compare_norm:
+        print(
+            ">>> Starting COMPARE-NORMALIZATION run (baseline vs baseline_bn)..."
+        )
+        pipeline = Pipeline(suite=COMPARE_NORM_SUITE, transform=BASELINE_TRANSFORM)
+        pipeline.run()
+
