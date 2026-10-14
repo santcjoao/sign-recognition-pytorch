@@ -10,19 +10,27 @@ __pycache__/
 env/
 venv/
 
-# Específicos do Projeto
+# Dataset Bruto e Compactados
 data/
+*.zip
 
-# Ruff / Mypy
+# Linters e Caches
 .ruff_cache/
 .mypy_cache/
 
-# Resultados de Experimentos / Pesos
-results/
-runs/
+# Model Checkpoints (Pesos binários grandes)
 *.pth
 *.pt
-*.csv
+
+# Predições brutas em lote
+results/**/predictions.csv
+JOAO_NATHAN_THIAGO_RESULTS.csv
+
+# Gráficos Omitidos
+results/comparatives/
+*confusion_matrix.png
+*acc_vs_support.png
+*all_class_accuracies.png
 
 # SO / IDEs
 .vscode/

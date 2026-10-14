@@ -1,0 +1,22 @@
+{
+    "experiment_name": "baseline_adam",
+    "model_config": {
+        "name": "baseline",
+        "dropout": 0.0,
+        "data_augmentation": false,
+        "batch_normalization": false,
+        "image_size": 32,
+        "base_channels": 32,
+        "num_blocks": 3
+    },
+    "hyperparameters": {
+        "epochs": 25,
+        "batch_size": 64,
+        "optimizer_name": "adam",
+        "learning_rate": 0.001,
+        "momentum": 0.0,
+        "weight_decay": 0.0,
+        "label_smoothing": 0.0,
+        "scheduler": null
+    }
+}
